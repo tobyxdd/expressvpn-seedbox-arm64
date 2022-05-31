@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  expressvpn:
+    container_name: expressvpn
+    build: ./expressvpn
+    environment:
+      - ACTIVATION_CODE=CHANGE_THIS
+      - SERVER=CHANGE_THIS
+      - PREFERRED_PROTOCOL=lightway_udp
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    privileged: true
+    restart: unless-stopped
+    ports:
+      - 8011:8080
+
+  ariang:
+    container_name: ariang
+    image: hurlenko/aria2-ariang
+    volumes:
+      - ./aria2_download:/aria2/data
+      - ./aria2_config:/aria2/conf
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - RPC_SECRET=CHANGE_THIS
+      - DOMAIN=0.0.0.0:8080
+      - ARIA2RPCPORT=8011
+    network_mode: service:expressvpn
+    depends_on:
+      - expressvpn
+    restart: unless-stopped
